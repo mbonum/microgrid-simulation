@@ -4,14 +4,22 @@ Runs through configurable timesteps, updates actor states, and calls
 the exchange matching engine each step.
 """
 from __future__ import annotations
-import simpy
+
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import List, Callable, Optional
+
+import simpy
+
 from .actors import Actor, ActorType, Battery
-from .exchange import match_energy, ExchangeResult
-from .metrics import compute_metrics, GridMetrics
-from .profiles import solar_profile, residential_load, commercial_load
+from .exchange import ExchangeResult, match_energy
+from .metrics import (
+    DailyMetrics,
+    GridMetrics,
+    compute_daily_metrics,
+    compute_metrics,
+)
+from .profiles import commercial_load, residential_load, solar_profile
 
 
 @dataclass
@@ -35,13 +43,14 @@ class Snapshot:
 @dataclass
 class SimState:
     config: SimConfig
-    actors: List[Actor] = field(default_factory=list)
-    snapshots: List[Snapshot] = field(default_factory=list)
+    actors: list[Actor] = field(default_factory=list)
+    snapshots: list[Snapshot] = field(default_factory=list)
+    daily: DailyMetrics | None = None
     current_time: float = 0.0
     running: bool = False
 
 
-def _make_actors(cfg: SimConfig, rng: random.Random) -> List[Actor]:
+def _make_actors(cfg: SimConfig, rng: random.Random) -> list[Actor]:
     actors = []
     for i in range(cfg.n_prosumers):
         bat = Battery(
@@ -67,7 +76,7 @@ def _make_actors(cfg: SimConfig, rng: random.Random) -> List[Actor]:
 
 def run_simulation(
     cfg: SimConfig,
-    on_step: Optional[Callable[[Snapshot], None]] = None,
+    on_step: Callable[[Snapshot], None] | None = None,
 ) -> SimState:
     """Run a full simulation synchronously; returns completed SimState."""
     rng = random.Random(cfg.seed)
@@ -126,5 +135,6 @@ def run_simulation(
     env.process(_step(env))
     steps = int(cfg.duration_hours / cfg.timestep_hours)
     env.run(until=steps)
+    state.daily = compute_daily_metrics(state.snapshots)
     state.running = False
     return state

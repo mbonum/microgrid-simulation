@@ -1,5 +1,6 @@
 """Simple synthetic load/generation profiles (no external data needed)."""
 from __future__ import annotations
+
 import math
 
 

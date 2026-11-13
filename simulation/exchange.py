@@ -1,7 +1,8 @@
 """Peer-to-peer energy matching and price discovery for the microgrid."""
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List
+
 from .actors import Actor
 
 
@@ -19,7 +20,7 @@ class Trade:
 
 @dataclass
 class ExchangeResult:
-    trades: List[Trade]
+    trades: list[Trade]
     unmet_demand_kwh: float   # demand that could not be matched locally
     excess_supply_kwh: float  # supply that could not be sold locally
     avg_price_eur_kwh: float  # volume-weighted average clearing price
@@ -36,7 +37,7 @@ def _midpoint_price(seller: Actor, buyer: Actor) -> float | None:
     return None
 
 
-def match_energy(actors: List[Actor], grid_fallback_price: float = 0.30) -> ExchangeResult:
+def match_energy(actors: list[Actor], grid_fallback_price: float = 0.30) -> ExchangeResult:
     """
     Simple bilateral matching: sort sellers by ask price (ascending),
     buyers by bid price (descending), match greedily.

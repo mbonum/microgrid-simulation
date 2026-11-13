@@ -1,11 +1,11 @@
 """Prosumer, Consumer, and Battery models for the microgrid simulation."""
 from __future__ import annotations
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional
+
+from dataclasses import dataclass
+from enum import StrEnum
 
 
-class ActorType(str, Enum):
+class ActorType(StrEnum):
     PROSUMER = "prosumer"   # produces + consumes (e.g. solar panel owner)
     CONSUMER = "consumer"   # consumes only
 
@@ -46,7 +46,7 @@ class Actor:
     # Energy state for current timestep (kWh)
     production_kwh: float = 0.0
     consumption_kwh: float = 0.0
-    battery: Optional[Battery] = None
+    battery: Battery | None = None
     # Accounting
     energy_bought_kwh: float = 0.0
     energy_sold_kwh: float = 0.0

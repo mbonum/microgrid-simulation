@@ -8,20 +8,20 @@ Endpoints:
   WS   /ws/{id}            — stream live snapshots as simulation runs
 """
 from __future__ import annotations
+
 import asyncio
 import json
+import os
+import sys
 import uuid
-from typing import Dict
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from simulation import run_simulation, SimConfig, SimState
-from simulation.metrics import GridMetrics
+from simulation import SimConfig, SimState, run_simulation
 
 app = FastAPI(title="Microgrid Simulation API", version="0.1.0")
 
@@ -33,15 +33,15 @@ app.add_middleware(
 )
 
 # in-memory store — swap for Redis/DB in production
-_runs: Dict[str, SimState] = {}
+_runs: dict[str, SimState] = {}
 
 
 class SimRequest(BaseModel):
-    n_prosumers: int = 5
-    n_consumers: int = 5
-    timestep_hours: float = 0.25
-    duration_hours: float = 24.0
-    grid_fallback_price: float = 0.30
+    n_prosumers: int = Field(default=5, ge=0, le=100)
+    n_consumers: int = Field(default=5, ge=0, le=100)
+    timestep_hours: float = Field(default=0.25, gt=0, le=24)
+    duration_hours: float = Field(default=24.0, gt=0, le=8760)
+    grid_fallback_price: float = Field(default=0.30, ge=0, le=10)
     seed: int = 42
 
 
@@ -86,8 +86,8 @@ async def get_metrics(run_id: str) -> dict:
     state = _runs.get(run_id)
     if not state:
         raise HTTPException(404, "Run not found")
-    last = state.snapshots[-1].metrics if state.snapshots else None
-    return {"run_id": run_id, "final_metrics": last.__dict__ if last else {}}
+    daily = state.daily
+    return {"run_id": run_id, "final_metrics": daily.__dict__ if daily else {}}
 
 
 @app.websocket("/ws/{run_id}")
