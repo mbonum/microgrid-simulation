@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const API = "";  // proxied by Vite
 
@@ -19,7 +19,6 @@ type ChartPoint = {
 
 export default function App() {
   const [running, setRunning] = useState(false);
-  const [runId, setRunId] = useState<string | null>(null);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [finalMetrics, setFinalMetrics] = useState<Metrics | null>(null);
 
@@ -42,7 +41,6 @@ export default function App() {
       body: JSON.stringify(config),
     });
     const { run_id } = await res.json();
-    setRunId(run_id);
 
     // stream via WebSocket
     const ws = new WebSocket(`ws://${location.host}/ws/${run_id}`);
