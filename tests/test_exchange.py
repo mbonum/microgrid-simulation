@@ -1,3 +1,5 @@
+import pytest
+
 from simulation.actors import Actor, ActorType
 from simulation.exchange import match_energy
 
@@ -32,6 +34,3 @@ def test_unmet_demand_goes_to_grid():
     result = match_energy([buyer], grid_fallback_price=0.30)
     assert result.unmet_demand_kwh == pytest.approx(5.0, abs=1e-6)
     assert buyer.cost_eur == pytest.approx(5.0 * 0.30, abs=1e-4)
-
-
-import pytest
