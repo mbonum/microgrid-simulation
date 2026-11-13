@@ -1,6 +1,8 @@
-# microgrid-sim
+# Microgrid Simulation
 
 Simulation of peer-to-peer energy exchange in a microgrid between **prosumers** (produce + consume) and **consumers** using a bilateral matching algorithm.
+
+Code implementation of my [Master's thesis](https://gupea.ub.gu.se/items/9c171fb1-5223-4409-8a06-ddb99db46907).
 
 ## Stack
 - **Simulation core**: Python + SimPy + NumPy/Pandas
